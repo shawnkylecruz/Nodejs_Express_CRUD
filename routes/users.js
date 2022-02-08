@@ -1,91 +1,105 @@
 import express from 'express';
+import mysql from 'mysql';
 
-import { v4 as uuidv4 } from 'uuid';
-uuidv4(); 
+var mysqlConnection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    database: 'nodeexpressdatabase'
+});
 
 const router = express.Router();
 
-let users = [
-    // {
-    //     firstName: "Shawn",
-    //     lastName: "Cruz",
-    //     age: 24,
-    //     id: 1
-    //  },
-    //  {
-    //     firstName: "Will",
-    //     lastName: "Smith",
-    //     age: 24,
-    //     id: 2
-    //  }
-]
+let users = []
 
-// all routes here are starting with /users
+// Get All
 router.get('/', (req, res) => {
-    res.send(users);
+    // res.send(users);
+    mysqlConnection.query('SELECT * FROM tblEmployees',(err, rows, fields) => {
+        if(!err)
+            res.send(rows);
+        else
+            console.log(err);
+    })
 });
 
-router.post('/', (req, res) => {
-
-    const user = req.body;
-
-    const userId = uuidv4(); 
-
-    const userWithId = { ...user, id: userId }
-
-    users.push(userWithId);
-
-    res.send(`User with the name ${user.firstName} added to the database`);
-});
-
-// /users/.... will get as params
+// Get by Parameter
 router.get('/:id', (req, res) => {
-
-    // console.log(req.params)
-
-    const { id } = req.params
-
-    const foundUser = users.find((user) => user.id == id);
-
-    res.send(foundUser)
-
+    mysqlConnection.query('SELECT * FROM tblEmployees WHERE id = ?',[req.params.id],(err, rows, fields) => {
+        if(!err)
+            res.send(rows);
+        else
+            console.log(err);
+    })
 });
 
+// Create
+router.post('/', (req, res) => {
+    const userId = req.body.id
+    let userFirstName = req.body.firstName
+    let userLastName = req.body.lastName
+    let userAge = req.body.age
+    
+    // if (req.body.id !== ''){
+    //     res.send(`You cannot manually insert ID to the Database`);
+    //     throw new Error('You cannot manually insert ID to the Database');
+    // }
+
+    if (userFirstName == undefined){userFirstName = ""}
+    if (userLastName == undefined){userLastName = ""}
+    if (userAge == undefined){userAge = ""}
+    
+
+    mysqlConnection.query("INSERT INTO tblEmployees (id,firstName,lastName,age) VALUES ('" + userId + "','" + userFirstName + "', '" + userLastName + "', '" + userAge + "');" ,(err, rows, fields) => {
+            if(!err)
+                res.send(`User with the name ${userFirstName} ${userLastName} added to the database`);
+            else
+                console.log(err);
+    })
+});
+
+
+// Delete
 router.delete('/:id', (req, res) => {
-
-    // console.log(req.params)
-
-    const { id } = req.params
-
-    users = users.filter((user) => user.id !== id);
-
-    res.send(`Use with the id ${id} deleted from the database`)
-
+    mysqlConnection.query('DELETE FROM tblEmployees WHERE id = ?',[req.params.id],(err, rows, fields) => {
+        if(!err)
+            res.send(`Use with the id ${req.params.id} deleted from the database`);
+        else
+            console.log(err);
+    })
 });
 
+// Edit
 router.patch('/:id', (req, res) => {
 
-    // console.log(req.params)
-
-    const { id } = req.params
-
-    const user = users.find((user) => user.id === id);
+    const userFirstName = req.body.firstName
+    const userLastName = req.body.lastName
+    const userAge = req.body.age
 
     const { firstName, lastName, age } = req.body 
 
-    if(firstName){
-        user.firstName = firstName
-    }
+    if(userFirstName !== undefined){
+        mysqlConnection.query('UPDATE tblEmployees SET firstName = ? WHERE id = ?',[firstName, req.params.id],(err, rows, fields) => {
+            if(err)
+            console.log(err);
+        })
+    };
 
-    if(lastName){
-        user.lastName = lastName
-    }
+    if(userLastName !== undefined){
+        mysqlConnection.query('UPDATE tblEmployees SET lastName = ? WHERE id = ?',[lastName, req.params.id],(err, rows, fields) => {
+            if(err)
+            console.log(err);
+        })
+    };
 
-    if(age){
-        user.age = age
-    }
+    if(userAge !== undefined){
+        mysqlConnection.query('UPDATE tblEmployees SET age = userAge WHERE id = ?',[userAge, req.params.id],(err, rows, fields) => {
+            if(!err)
+            console.log(err);
+        })
+    };
 
-    res.send(`Use with the id ${id} deleted from the database`)
+    res.send(`User with the ID ${req.params.id} is updated in the database`);
 
 });
 
