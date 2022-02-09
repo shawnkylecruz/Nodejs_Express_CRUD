@@ -10,8 +10,6 @@ var mysqlConnection = mysql.createConnection({
 
 const router = express.Router();
 
-let users = []
-
 // Get All
 router.get('/', (req, res) => {
     // res.send(users);
@@ -75,8 +73,6 @@ router.delete('/:id', (req, res) => {
 
 // Edit
 router.patch('/:id', (req, res) => {
-
-    console.log(req.params.id);
 
     const userFirstName = req.body.firstName
     const userLastName = req.body.lastName
