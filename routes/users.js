@@ -45,6 +45,10 @@ router.post('/', (req, res) => {
     //     throw new Error('You cannot manually insert ID to the Database');
     // }
 
+    if((userFirstName == undefined)&&(userLastName == undefined)&&(userAge == undefined)){
+        throw new Error(`Please enter valid details for updating ID ${req.params.id}`);
+    }
+
     if (userFirstName == undefined){userFirstName = ""}
     if (userLastName == undefined){userLastName = ""}
     if (userAge == undefined){userAge = ""}
@@ -72,11 +76,17 @@ router.delete('/:id', (req, res) => {
 // Edit
 router.patch('/:id', (req, res) => {
 
+    console.log(req.params.id);
+
     const userFirstName = req.body.firstName
     const userLastName = req.body.lastName
     const userAge = req.body.age
 
-    const { firstName, lastName, age } = req.body 
+    const { firstName, lastName, age } = req.body
+    
+    if((userFirstName == undefined)&&(userLastName == undefined)&&(userAge == undefined)){
+        throw new Error(`Please enter valid details for updating ID ${req.params.id}`);
+    }
 
     if(userFirstName !== undefined){
         mysqlConnection.query('UPDATE tblEmployees SET firstName = ? WHERE id = ?',[firstName, req.params.id],(err, rows, fields) => {
